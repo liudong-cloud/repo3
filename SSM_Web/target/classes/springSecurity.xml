@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <!-- 配置不拦截的资源 -->
+    <security:http pattern="/login.jsp" security="none"/>
+    <security:http pattern="/failer.jsp" security="none"/>
+    <security:http pattern="/css/**" security="none"/>
+    <security:http pattern="/img/**" security="none"/>
+    <security:http pattern="/plugins/**" security="none"/>
+    <security:http pattern="/js/**" security="none"/>
+
+
+
+    <security:http auto-config="true" use-expressions="false">
+        <!-- intercept-url定义一个过滤规则 pattern表示对哪些url进行权限控制，ccess属性表示在请求对应
+        的URL时需要什么权限，
+        默认配置时它应该是一个以逗号分隔的角色列表，请求的用户只需拥有其中的一个角色就能成功访问对应
+        的URL -->
+        <security:intercept-url pattern="/**" access="ROLE_USER,ROLE_ADMIN" />
+        <!-- auto-config配置后，不需要在配置下面信息 <security:form-login /> 定义登录表单信息
+        <security:http-basic
+        /> <security:logout />
+         login-page  自定页面-->
+        <security:form-login login-page="/login.jsp"
+                             login-processing-url="/login.do"
+                             username-parameter="username"
+                             password-parameter="password"
+                             default-target-url="/index.jsp"
+                             authentication-failure-url="/failer.jsp"
+                             authentication-success-forward-url="/pages/main.jsp"/>
+
+
+        <!--退出-->
+        <security:logout invalidate-session="true" logout-url="/logout.do"
+                         logout-success-url="/login.jsp"/>
+        <!--关闭csrf-->
+        <security:csrf disabled="true"/>
+    </security:http>
+
+
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="userService">
+
+            <!-- 配置加密的方式-->
+            <security:password-encoder ref="passwordEncoder"/>
+
+            <!--<security:user-service>-->
+                <!--<security:user name="user" password="{noop}user"-->
+                               <!--authorities="ROLE_USER" />-->
+                <!--<security:user name="admin" password="{noop}admin"-->
+                               <!--authorities="ROLE_ADMIN" />-->
+            <!--</security:user-service>-->
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <!--配置加密类-->
+    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+</beans>
